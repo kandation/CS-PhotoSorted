@@ -28,15 +28,19 @@ This software will help you move that to the folder and sorted by date.
 - [Fix] clean recusive loop
 
 # Screenshot
+
 **Before Clear**
+
 ![Before Clear](https://raw.githubusercontent.com/kandation/photoSorted/master/screenshort/ss01.png)
 _____________________________________________
 
 **After Clear**
+
 ![After Clear](https://raw.githubusercontent.com/kandation/photoSorted/master/screenshort/ss02.png)
 _____________________________________________
 
 **Infolder**
+
 ![Infolder](https://raw.githubusercontent.com/kandation/photoSorted/master/screenshort/ss03.png)
 _____________________________________________
 
