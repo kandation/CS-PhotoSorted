@@ -12,7 +12,7 @@ This software will help you move that to the folder and sorted by date.
 
 
 # Patch Note
-** v1.02 ** (61/07/06)
+**v1.02** (61/07/06)
 - [new] more speed
 - [new] clean fake extension
 - [new] detect images by binary not extension
@@ -20,8 +20,13 @@ This software will help you move that to the folder and sorted by date.
 - [Fix] clean recusive loop
 
 # Screenshot
+**Before Clear**
 ![Before Clear](https://raw.githubusercontent.com/kandation/photoSorted/master/screenshort/ss01.png)
+
+**After Clear **
 ![After Clear](https://raw.githubusercontent.com/kandation/photoSorted/master/screenshort/ss02.png)
+
+**Infolder**
 ![Infolder](https://raw.githubusercontent.com/kandation/photoSorted/master/screenshort/ss03.png)
 
 
