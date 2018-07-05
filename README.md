@@ -8,10 +8,16 @@ This software will help you move that to the folder and sorted by date.
 > Buddhist calendar
 
 # Download
+[v 1.03](https://github.com/kandation/photoSorted/blob/master/binary/photoSorted_v1.03.exe)
 [v 1.02](https://github.com/kandation/photoSorted/blob/master/binary/photoSorted_v1.02.exe)
 
 
 # Patch Note
+**v1.03** (61/07/06)
+- [add] progess bar 
+- [add] jpg bin code check
+- [fix] slow console
+- [fix] status wrong
 **v1.02** (61/07/06)
 - [new] more speed
 - [new] clean fake extension
