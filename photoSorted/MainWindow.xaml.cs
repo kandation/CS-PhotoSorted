@@ -42,6 +42,50 @@ namespace photoSorted
                 //System.Windows.Forms.MessageBox.Show(fbd.SelectedPath);
             }
         }
+        public enum ImageFormat
+        {
+            bmp,
+            jpg,
+            gif,
+            tiff,
+            png,
+            unknown
+        }
+
+        public static ImageFormat GetImageFormat(byte[] bytes)
+        {
+            // see http://www.mikekunz.com/image_file_header.html  
+            var bmp = Encoding.ASCII.GetBytes("BM");     // BMP
+            var gif = Encoding.ASCII.GetBytes("GIF");    // GIF
+            var png = new byte[] { 137, 80, 78, 71 };    // PNG
+            var tiff = new byte[] { 73, 73, 42 };         // TIFF
+            var tiff2 = new byte[] { 77, 77, 42 };         // TIFF
+            var jpeg = new byte[] { 255, 216, 255, 224 }; // jpeg
+            var jpeg2 = new byte[] { 255, 216, 255, 225 }; // jpeg canon
+
+            if (bmp.SequenceEqual(bytes.Take(bmp.Length)))
+                return ImageFormat.bmp;
+
+            if (gif.SequenceEqual(bytes.Take(gif.Length)))
+                return ImageFormat.gif;
+
+            if (png.SequenceEqual(bytes.Take(png.Length)))
+                return ImageFormat.png;
+
+            if (tiff.SequenceEqual(bytes.Take(tiff.Length)))
+                return ImageFormat.tiff;
+
+            if (tiff2.SequenceEqual(bytes.Take(tiff2.Length)))
+                return ImageFormat.tiff;
+
+            if (jpeg.SequenceEqual(bytes.Take(jpeg.Length)))
+                return ImageFormat.jpg;
+
+            if (jpeg2.SequenceEqual(bytes.Take(jpeg2.Length)))
+                return ImageFormat.jpg;
+
+            return ImageFormat.unknown;
+        }
 
         private void process(String path)
         {
@@ -56,15 +100,16 @@ namespace photoSorted
 
                 String dateTimePath = dateFolderGenerate(time);
 
-                String newPath = generate_folder(path, dateTimePath);
-                String status = move2folder(file, newPath);
+                //String newPath = generate_folder(path, dateTimePath);
+                String status = move2folder(file, path, dateTimePath);
 
                 DetailBox.Text += status + "\r\n";
                 counter += 1;
-
+                TextStatisticBox.Text = "couter=" + counter.ToString();
                 
+
+
             }
-            TextStatisticBox.Text = "couter="+counter.ToString();
             String logText = DetailBox.Text;
             writeLogFile(path, logText);
         }
@@ -89,13 +134,22 @@ namespace photoSorted
 
         } 
 
-        private String move2folder(String srcPath, String desPath, int stack=0)
+        private String move2folder(String srcPath, String dirPath, String dateTimePath ,  int stack=0)
         {
             String status = "";
             try
             {
                 FileInfo fi = new FileInfo(srcPath);
-                String newFileName = cleanExtension(srcPath);
+                String newFileName = newCleanExtension(srcPath);
+                String desPath = "";
+
+                //Create Directory when is real Extension (new 61/07/06)
+                if (!newFileName.Equals("-1"))
+                {
+                    desPath = generate_folder(dirPath, dateTimePath);
+                }
+ 
+                //Environment.Exit(0);
                 String fileDstPath = desPath + "/" + newFileName;
 
                 Console.WriteLine( fi.LastWriteTime.ToString());
@@ -111,6 +165,7 @@ namespace photoSorted
                 {                    
                     if (!File.Exists(fileDstPath))
                     {
+
                         File.Move(srcPath, fileDstPath);
                         status = String.Format("MV\t{1}\t{0}\t{2}", newFileName, fi.Extension, fid);
                     }
@@ -123,12 +178,16 @@ namespace photoSorted
 
             }
             catch (Exception e)
-            {                
+            {      
+                // First problem when load image from internet :: File is Locked
+                // Unlock Permission
                 fileBasicSolution(srcPath);
                 stack++;
+
+                //Try agin
                 if (stack < 5)
                 {
-                    status = move2folder(srcPath, desPath, stack);
+                    status = move2folder(srcPath, dirPath, dateTimePath, stack);
                 }
                 else
                 {
@@ -156,39 +215,91 @@ namespace photoSorted
                 attributes = RemoveAttribute(attributes, FileAttributes.ReadOnly);
                 File.SetAttributes(p, attributes);
                 Console.WriteLine("The {0} file is no longer RO.", p);
-            }
-            
+            }            
+
         }
 
-        private String cleanExtension(String filePath)
+        public byte[] FileToByteArray(string fileName)
         {
-            
-            String[] allowExtension = {".jpg", ".png", ".gif" };
-            FileInfo file = new FileInfo(filePath);
-            String newFileName = file.Name;
-            String fn = file.Extension.ToLower();
+            byte[] buff = null;
+            FileStream fs = new FileStream(fileName,
+                                           FileMode.Open,
+                                           FileAccess.Read);
+            BinaryReader br = new BinaryReader(fs);
+            long numBytes = new FileInfo(fileName).Length;
+            buff = br.ReadBytes((int)numBytes);
+            fs.Close();
+            return buff;
+        }
+
+        private Boolean isAllowExtention(String extension)
+        {
+            String[] allowextension = { "jpg", "png", "gif"};            
+            return Array.Exists(allowextension, ext => ext == extension);
+        }
+
+        private String newCleanExtension(String filePath)
+        {
+            /*
+             *  This Function Should be only check File Extension and suggests new filename will be
+             *  Do not Move or Manage File
+             *  @input : String(Full_File_path)
+             *  @output : String(New_file_name)
+             */
             bool isImage = false;
-            foreach (String al in allowExtension)
+
+            FileInfo file = new FileInfo(filePath);
+            String fileName = file.Name;
+            
+            // Add to RealImageExtension Check
+            Byte[] fileByte = FileToByteArray(filePath);
+            ImageFormat fm = GetImageFormat(fileByte);
+
+            String fileRealExtension = fm.ToString();
+
+            // Check isImages
+            if (isAllowExtention(fileRealExtension))
             {
-                if (fn.Equals(al))
+                // Do anything when input filename is Images
+                isImage = true;
+
+                // Check And remove old Extension
+                if (file.Extension != "-1")
                 {
-                    isImage = true;
+                    fileName = newCleanExtension_removeOldExtension(fileName, file.Extension);
                 }
-                else
-                {
-                    int k = fn.IndexOf("large");
-                    if (k > 0)
-                    {
-                        newFileName = file.Name.Substring(0, file.Name.Length - 6);
-                        isImage = (!cleanExtension(file.Directory.ToString() + "/" + newFileName).Equals("-1"));
-                        break;
-                    }
+
+                // Check and remove "large" from filename
+                if ( newCleanExtension_isLargeName(fileName) )
+                {                    
+                    fileName = newCleanExtension_largeNameClean(fileName);
                 }
                 
+                fileName = fileName.Trim();
+                fileName = fileName + "." + fileRealExtension;
+
             }
 
+            return (isImage) ? fileName : "-1";
+        }
 
-            return (isImage) ? newFileName : "-1";
+
+        private String newCleanExtension_removeOldExtension(String filename, String extension)
+        {
+            return filename.Substring(0, filename.Length - extension.Length);
+        }
+
+        private bool newCleanExtension_isLargeName(String filename)
+        {            
+            return filename.EndsWith(" large");
+        }
+
+        private String newCleanExtension_largeNameClean(String filename)
+        {
+            //Console.WriteLine("Do GetLArgeeee");
+            String tempFileName = filename;
+            tempFileName = tempFileName.Substring(0, tempFileName.Length - 6);
+            return tempFileName;
         }
 
         private static FileAttributes RemoveAttribute(FileAttributes attributes, FileAttributes attributesToRemove)
@@ -201,9 +312,61 @@ namespace photoSorted
             String path = TextPathBox.Text;
             if (System.Windows.MessageBox.Show("Do You want to Clean\n"+ path, "Clean?", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
             {
-                process(path);
+                try
+                {
+                    process(path);
+                }
+                catch (Exception edda)
+                {
+
+                    if (System.Windows.MessageBox.Show(edda + "\n" + path, "Program is Catch", MessageBoxButton.OK, MessageBoxImage.Warning) == MessageBoxResult.OK)
+                    {
+                        Environment.Exit(0);
+                    }
+                }
+                
             }
             
         }
+
+        /*private String cleanExtension(String filePath)
+        {
+            
+            String[] allowExtension = {".jpg", ".png", ".gif" };
+            FileInfo file = new FileInfo(filePath);
+            String newFileName = file.Name;
+            String fn = file.Extension.ToLower();
+            bool isImage = false;
+            foreach (String al in allowExtension)
+            {
+                if (fn.Equals(al))
+                {
+                    isImage = true;
+                    break;
+                }
+                else
+                {
+                    int k = fn.IndexOf("large");
+                    if (k > 0)
+                    {
+                        newFileName = file.Name.Substring(0, file.Name.Length - 6);
+                        isImage = (!cleanExtension(file.Directory.ToString() + "/" + newFileName).Equals("-1"));
+                        break;
+                    }
+                    else
+                    {
+                        Byte[] fileByte = FileToByteArray(filePath);
+                        ImageFormat fm = GetImageFormat(fileByte);                        
+                        Console.WriteLine(file.Directory.FullName + "-----" +newFileName);
+                        isImage = (!cleanExtension(file.Directory.FullName.ToString() + "/" + newFileName).Equals("-1"));
+                        break;
+
+                    }
+                }                
+            }
+
+
+            return (isImage) ? newFileName : "-1";
+        }*/
     }
 }
