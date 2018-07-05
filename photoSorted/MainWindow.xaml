@@ -5,13 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:photoSorted"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow" Height="356.77" Width="525">
     <Grid x:Name="Grid">
         <Button x:Name="ButtonBrowse" Content="Select Folder" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75" Click="browse_folder"/>
         <TextBox x:Name="TextPathBox" HorizontalAlignment="Left" Height="20" Margin="85,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="422" IsReadOnly="True"/>
-        <TextBox x:Name="DetailBox" HorizontalAlignment="Left" Height="227" Margin="10,35,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="497" ScrollViewer.CanContentScroll="True" VerticalScrollBarVisibility="Auto" IsReadOnly="True"/>
-        <TextBlock x:Name="TextStatisticBox" HorizontalAlignment="Left" Margin="10,267,0,0" TextWrapping="Wrap" Text="Counter = 0" VerticalAlignment="Top"/>
-        <Button x:Name="PPB" Content="Process" HorizontalAlignment="Left" Margin="432,268,0,0" VerticalAlignment="Top" Width="75" Height="41" IsEnabled="False" Click="do_process"/>
+        <TextBox x:Name="DetailBox" HorizontalAlignment="Left" Height="227" Margin="10,46,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="497" ScrollViewer.CanContentScroll="True" VerticalScrollBarVisibility="Auto" IsReadOnly="True"/>
+        <TextBlock x:Name="TextStatisticBox" HorizontalAlignment="Left" Margin="10,278,0,0" TextWrapping="Wrap" Text="Counter = 0" VerticalAlignment="Top"/>
+        <Button x:Name="PPB" Content="Process" HorizontalAlignment="Left" Margin="439,278,0,0" VerticalAlignment="Top" Width="68" Height="38" IsEnabled="False" Click="do_process"/>
+        <ProgressBar x:Name="pgb_top" HorizontalAlignment="Left" Height="6" Margin="10,35,0,0" VerticalAlignment="Top" Width="497"/>
 
     </Grid>
 </Window>
